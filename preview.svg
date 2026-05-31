@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630"
+     font-family="'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <linearGradient id="tri" x1="0" y1="85" x2="0" y2="545" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#333c48"/>
+      <stop offset="1" stop-color="#2a313a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="1200" height="630" fill="#1b1d22"/>
+
+  <!-- exposure triangle (left), enlarged to fill the frame -->
+  <polygon points="300,85 65,545 535,545" fill="url(#tri)" stroke="#5a6470" stroke-width="2"/>
+  <!-- colored edges: aperture / shutter / ISO -->
+  <line x1="300" y1="85"  x2="65"  y2="545" stroke="#5aa9e6" stroke-width="7" stroke-linecap="round"/>
+  <line x1="65"  y1="545" x2="535" y2="545" stroke="#7ad17a" stroke-width="7" stroke-linecap="round"/>
+  <line x1="535" y1="545" x2="300" y2="85"  stroke="#ffb454" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- projection lines from the marker to the three axes -->
+  <g stroke-dasharray="6 7" stroke-width="2.5" fill="none">
+    <line x1="277" y1="361" x2="159" y2="361" stroke="#5aa9e6"/>
+    <line x1="277" y1="361" x2="370" y2="545" stroke="#7ad17a"/>
+    <line x1="277" y1="361" x2="359" y2="200" stroke="#ffb454"/>
+  </g>
+  <circle cx="159" cy="361" r="6" fill="#5aa9e6"/>
+  <circle cx="370" cy="545" r="6" fill="#7ad17a"/>
+  <circle cx="359" cy="200" r="6" fill="#ffb454"/>
+  <!-- marker -->
+  <circle cx="277" cy="361" r="13" fill="#ffd23f" stroke="#1b1d22" stroke-width="3"/>
+
+  <!-- title + tagline (right) -->
+  <text x="580" y="140" font-size="58" font-weight="700" fill="#e8e8ea">Exposure Triangle</text>
+  <text x="580" y="210" font-size="58" font-weight="700" fill="#e8e8ea">Explorer</text>
+
+  <text x="580" y="282" font-size="26" fill="#9aa0aa">Balance aperture, shutter &amp; ISO at correct</text>
+  <text x="580" y="316" font-size="26" fill="#9aa0aa">exposure — see blur and noise trade off.</text>
+
+  <!-- legend -->
+  <circle cx="592" cy="372" r="9" fill="#5aa9e6"/><text x="616" y="380" font-size="26" fill="#e8e8ea">Aperture — background blur</text>
+  <circle cx="592" cy="416" r="9" fill="#7ad17a"/><text x="616" y="424" font-size="26" fill="#e8e8ea">Shutter — motion blur</text>
+  <circle cx="592" cy="460" r="9" fill="#ffb454"/><text x="616" y="468" font-size="26" fill="#e8e8ea">ISO — noise</text>
+
+  <text x="580" y="526" font-size="26" font-weight="600" fill="#5aa9e6">exposure-triangle.arnebaeyens.com</text>
+</svg>
