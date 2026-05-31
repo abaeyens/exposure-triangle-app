@@ -1,5 +1,7 @@
 # Exposure Triangle Explorer
 
+[![Exposure Triangle Explorer](preview.png)](https://exposure-triangle.arnebaeyens.com/)
+
 An interactive visualization of the photographic exposure triangle. Pick a
 scene, then drag inside the triangle to redistribute a *correct* exposure
 across aperture, shutter speed, and ISO: the image lightness stays correct

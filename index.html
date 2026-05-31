@@ -35,6 +35,8 @@
   "applicationCategory": "EducationalApplication",
   "operatingSystem": "Any (web browser)",
   "browserRequirements": "Requires JavaScript and HTML5 canvas",
+  "datePublished": "2026-05-31",
+  "dateModified": "2026-05-31",
   "author": { "@type": "Person", "name": "Arne Baeyens" },
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
@@ -94,9 +96,8 @@
 <header>
   <h1>Exposure Triangle Explorer</h1>
   <p class="sub">Pick a scene, then drag inside the triangle. Each edge is an
-     axis for one setting; the dotted lines read the current values off the
-     edges. Brightness stays correct everywhere &mdash; you only choose which
-     artifact to accept.</p>
+     axis for one setting &mdash; aperture, shutter, ISO &mdash; and the dotted
+     lines read the current values off the edges.</p>
 </header>
 
 <div class="scenes" id="scenes"></div>
@@ -138,13 +139,11 @@
 </div>
 
 <p class="insight">
-  <b>How to use:</b> drag the dot to set your aperture / shutter / ISO balance
-  &mdash; you freely choose any two and the third follows automatically to keep
-  the image lightness correct. Notice that a bright scene gives a small,
+  <b>How it works:</b> every point in the triangle is a correctly exposed
+  combination &mdash; you choose any two settings and the third follows. So you
+  are only picking which artifact to accept: a bright scene gives a small,
   comfortable triangle (little blur or noise anywhere), while a dim scene forces
-  you into blur or noise wherever you click &mdash; light is what buys you out
-  of the trade-off. Photon count assumes a 24&nbsp;MP full-frame green pixel at
-  the midtone.
+  blur or noise wherever you click. Light is what buys you out of the trade-off.
 </p>
 
 <footer>
