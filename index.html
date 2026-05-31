@@ -319,7 +319,9 @@ function drawPreview(apN, t, neff){
 
   // moving subject square: linear alpha = fraction of the exposure it covers the pixel
   const side=Math.round(Math.min(W,H)*0.42), cx=W/2, cy=H/2, half=side/2;
-  const streak=Math.min(W*0.45,900*t), sh2=streak/2;
+  // streak length grows with exposure time; capped at 6× the canvas width so a
+  // very long exposure smears the box into a faint band rather than vanishing.
+  const streak=Math.min(6*W,900*t), sh2=streak/2;
   const y0=Math.max(0,(cy-half)|0), y1=Math.min(H-1,Math.ceil(cy+half));
   for(let y=y0;y<=y1;y++) for(let x=0;x<W;x++){
     let f;
