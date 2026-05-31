@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://exposure-triangle.arnebaeyens.com/sitemap.xml
