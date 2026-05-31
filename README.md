@@ -8,13 +8,15 @@ across aperture, shutter speed, and ISO: the image lightness stays correct
 everywhere, while the trade-off between background blur, motion blur, and noise
 changes.
 
-**Live:** https://exposure-triangle.arnebaeyens.com
+**Live:** https://exposure-triangle.arnebaeyens.com/
 
 ## How it works
 
 - Each scene fixes the illuminance (its EV at ISO 100). The triangle is a
   ternary plot — each **edge is an axis** for one setting, with real f-stop /
   shutter / ISO ticks.
+- Or switch to **Manual** mode to type in an arbitrary illuminance (1–200000 lx)
+  and explore the triangle for that EV.
 - Every point in the triangle is a correctly-exposed combination: you freely
   choose any two settings and the third follows, because correct exposure
   removes one degree of freedom. The marker snaps to the nearest valid

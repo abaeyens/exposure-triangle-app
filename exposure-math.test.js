@@ -4,10 +4,7 @@ const assert = require('node:assert/strict');
 const M = require('./exposure-math.js');
 
 const centroidCombo = combos =>            // combo nearest the barycentre (what the app starts on)
-  combos.reduce((best,c)=>{
-    const d=(c.la-1/3)**2+(c.ls-1/3)**2+(c.li-1/3)**2;
-    return d<best.d ? {c,d} : best;
-  }, {c:null,d:Infinity}).c;
+  M.nearestCombo(combos, {la:1/3, ls:1/3, li:1/3});
 
 test('every preset yields 21 combos, self-consistent and near its labelled EV', () => {
   for (const sc of M.SCENES) {
@@ -79,4 +76,25 @@ test('off-range greying fires below the representable floor, not within it', () 
   assert.equal(off(1), true,  '1 lx is below the triangle floor → should grey out');
   assert.equal(off(3.4), false, '3.4 lx (twilight) is representable');
   assert.equal(off(10000), false, '10000 lx is representable');
+});
+
+test('pixBary(baryPix(b)) round-trips interior barycentric points', () => {
+  for (const b of [{la:1/3,ls:1/3,li:1/3}, {la:0.5,ls:0.3,li:0.2}, {la:0.1,ls:0.6,li:0.3}]) {
+    const r = M.pixBary(M.baryPix(b));
+    for (const k of ['la','ls','li']) assert.ok(Math.abs(r[k] - b[k]) < 1e-9, `${k}: ${r[k]} vs ${b[k]}`);
+  }
+});
+
+test('pixBary clamps points outside the triangle to the simplex', () => {
+  const r = M.pixBary({x:-500, y:-500});
+  for (const k of ['la','ls','li']) assert.ok(r[k] >= 0, `${k} should be ≥ 0, got ${r[k]}`);
+  assert.ok(Math.abs(r.la + r.ls + r.li - 1) < 1e-9, 'coords should sum to 1');
+});
+
+test('nearestCombo returns a member, and the exact combo for its own (la,ls,li)', () => {
+  const combos = M.buildCombos(M.SCENES[3]);
+  const target = combos[7];
+  const got = M.nearestCombo(combos, {la:target.la, ls:target.ls, li:target.li});
+  assert.ok(combos.includes(got), 'result should be a member of combos');
+  assert.equal(got, target, 'target equal to a combo should return that combo');
 });
