@@ -74,10 +74,18 @@
   .row:last-child { border-bottom:none; }
   .row .k { color:var(--dim); }
   .row .v { font-variant-numeric:tabular-nums; font-weight:600; }
+  #pLux input { width:62px; background:#1f232a; color:var(--ink); border:1px solid #3a404a;
+    border-radius:5px; padding:1px 5px; font:inherit; font-weight:600; text-align:right; }
+  #pLux input.bad { border-color:#e06c6c; }
+  #pLux input::-webkit-outer-spin-button,
+  #pLux input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  #pLux input[type=number] { -moz-appearance:textfield; appearance:textfield; }
   .big { display:flex; gap:16px; justify-content:center; margin:2px 0 12px; }
   .big > div { text-align:center; }
   .big .lab { font-size:11px; color:var(--dim); }
   .big .num { font-size:20px; font-weight:700; }
+  .big { transition:opacity .15s; }
+  .big.off { opacity:.35; }
   .sensor { display:flex; gap:8px; align-items:center; margin-bottom:14px; }
   .sensor select, .sensor input {
     background:#1f232a; color:var(--ink); border:1px solid #3a404a;
@@ -97,9 +105,9 @@
     header { padding:10px 14px 2px; }
     h1 { font-size:18px; }
     p.sub { font-size:12px; }
-    .scenes { padding:8px 14px; gap:6px; }
-    .scenes button { flex-direction:column; gap:2px; padding:6px 8px; font-size:12px; }
-    .scenes .emoji { font-size:17px; }
+    .scenes { padding:8px 12px; gap:5px; }
+    .scenes button { flex-direction:column; gap:2px; padding:5px 6px; font-size:11px; }
+    .scenes .emoji { font-size:16px; }
     .main { flex-direction:column; gap:10px; padding:2px 14px 12px; }
     .card { width:100%; padding:10px; }
     .physics { min-width:0; grid-template-columns:1fr 2fr; }
@@ -175,43 +183,11 @@
   Developed by <a href="https://arnebaeyens.com/" target="_blank" rel="noopener">Arne Baeyens</a> · <a href="https://github.com/abaeyens/exposure-triangle-app" target="_blank" rel="noopener">source code (MIT licensed) ↗</a>
 </footer>
 
+<script src="exposure-math.js"></script>
 <script>
-// ---- ladders (real full-stop values), index = stop position --------------
-const APER = [1.4,2,2.8,4,5.6,8,11,16,22];
-const SHUT = [
-  {s:30,l:'30"'},{s:15,l:'15"'},{s:8,l:'8"'},{s:4,l:'4"'},{s:2,l:'2"'},
-  {s:1,l:'1"'},{s:1/2,l:'1/2'},{s:1/4,l:'1/4'},{s:1/8,l:'1/8'},{s:1/15,l:'1/15'},
-  {s:1/30,l:'1/30'},{s:1/60,l:'1/60'},{s:1/125,l:'1/125'},{s:1/250,l:'1/250'},
-  {s:1/500,l:'1/500'},{s:1/1000,l:'1/1k'},{s:1/2000,l:'1/2k'},
-  {s:1/4000,l:'1/4k'},{s:1/8000,l:'1/8k'}
-];
-const ISO = [100,200,400,800,1600,3200,6400,12800,25600];
-const K = 5;   // every axis spans 5 stops
-
-// scene = axis index endpoints:
-//   ap:[closedIdx@λA=0, openIdx@λA=1]  sh:[fastIdx@λS=0, slowIdx@λS=1]
-//   is:[lowIdx@λI=0, highIdx@λI=1]
-const SCENES = [
-  {name:'🛋️ Living room', ev:5,  lux:80,    ap:[5,0], sh:[12,7], is:[3,8]},
-  {name:'💡 Indoor',  ev:8,  lux:640,   ap:[6,1], sh:[12,7], is:[1,6]},
-  {name:'☁️ Overcast',ev:12, lux:10000, ap:[7,2], sh:[14,9], is:[0,5]},
-  {name:'☀️ Sunny',   ev:15, lux:82000, ap:[7,2], sh:[17,12],is:[0,5]},
-];
-
-// precompute the valid, correctly-exposed full-stop combos for a scene ------
-function buildCombos(sc){
-  const [ac,ao]=sc.ap, [sf,ss]=sc.sh, [il,ih]=sc.is;
-  const Csum = ac + sf - il - K;          // aIdx + sIdx - gIdx is invariant
-  const out=[];
-  for(let ai=Math.min(ao,ac); ai<=Math.max(ao,ac); ai++)
-    for(let gi=il; gi<=ih; gi++){
-      const si = Csum - ai + gi;
-      if(si<Math.min(sf,ss) || si>Math.max(sf,ss)) continue;
-      out.push({ai,si,gi,
-        la:(ac-ai)/K, ls:(sf-si)/K, li:(gi-il)/K});
-    }
-  return out;
-}
+// The ladders (APER/SHUT/ISO), K, SCENES, buildCombos, axesForEV, evOfCombo,
+// evFromLux and luxValid live in exposure-math.js (loaded above, unit-tested
+// under Node). This script holds the DOM, drawing and interaction code.
 
 // ---- geometry -------------------------------------------------------------
 const PA={x:190,y:28}, PS={x:44,y:278}, PI={x:336,y:278};   // A top, S left, I right
@@ -377,12 +353,19 @@ function update(){
 
   drawTriangle(); drawPreview(N,sh.s,neff);
 
+  // grey out the settings if the lattice can't expose for the requested illuminance
+  const actualEV = evOfCombo(cur.ai, cur.si, cur.gi);
+  const offRange = Math.abs(scene.ev - actualEV) > 0.8;
+  const bigEl = document.querySelector('.big');
+  bigEl.classList.toggle('off', offRange);
+  bigEl.title = offRange ? 'These settings cannot reproduce the entered illuminance (out of range)' : '';
+
   document.getElementById('vAper').textContent='f/'+N;
   document.getElementById('vShut').textContent=sh.l.replace('k','000');
   document.getElementById('vIso').textContent=iso;
 
-  document.getElementById('pLux').textContent=scene.lux.toLocaleString()+' lx';
-  document.getElementById('pEv').textContent=scene.ev;
+  if(!scene.manual) document.getElementById('pLux').textContent=scene.lux.toLocaleString()+' lx';
+  document.getElementById('pEv').textContent=scene.manual ? scene.ev.toFixed(1) : scene.ev;
   document.getElementById('pH').textContent=(10/iso).toExponential(1)+' lx·s';
   document.getElementById('pPh').textContent=Math.round(photons).toLocaleString();
 }
@@ -398,6 +381,30 @@ SCENES.forEach(sc=>{
     b.classList.add('active'); setScene(sc); };
   sd.appendChild(b);
 });
+
+// manual mode: a 5th button turns "Scene illuminance" into an editable lux field
+const pLux=document.getElementById('pLux');
+let manualLux=10000;
+function applyManual(lux){
+  manualLux=lux;
+  const ev=evFromLux(lux), ax=axesForEV(ev);
+  setScene({name:'Manual', manual:true, ev, lux, ap:ax.ap, sh:ax.sh, is:ax.is});
+}
+function enterManual(){
+  applyManual(manualLux);
+  pLux.innerHTML='<input id="luxIn" type="number" min="1" max="200000" step="any" value="'+Math.round(manualLux)+'"> lx';
+  document.getElementById('luxIn').oninput=function(){
+    const lux=parseFloat(this.value);
+    const ok = luxValid(lux);                 // reject non-positive and > 200k lx
+    this.classList.toggle('bad', !ok);
+    if(ok) applyManual(lux);
+  };
+}
+const mb=document.createElement('button');
+mb.innerHTML='<span class="emoji">✏️</span><span class="lbl">Manual</span>';
+mb.onclick=()=>{ [...sd.children].forEach(c=>c.classList.remove('active'));
+  mb.classList.add('active'); if(scene&&!scene.manual) manualLux=scene.lux; enterManual(); };
+sd.appendChild(mb);
 
 let drag=false;
 function handle(e){
@@ -426,9 +433,9 @@ function layout(){
 }
 window.addEventListener('resize', layout);
 
-sd.children[2].classList.add('active');   // default Overcast
+sd.children[3].classList.add('active');   // default Overcast
 layout();
-setScene(SCENES[2]);
+setScene(SCENES[3]);
 </script>
 </body>
 </html>
