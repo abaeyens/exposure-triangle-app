@@ -55,24 +55,27 @@
   p.sub { color:var(--dim); margin:4px 0 0; font-size:13px; max-width:760px; }
   .scenes { display:flex; gap:8px; flex-wrap:wrap; padding:12px 20px; }
   .scenes button {
+    display:flex; align-items:center; justify-content:center; gap:6px;
     background:var(--panel); color:var(--ink); border:1px solid #3a404a;
     border-radius:8px; padding:8px 14px; cursor:pointer; font-size:14px;
   }
   .scenes button.active { border-color:var(--mark); color:var(--mark); }
+  .scenes .lbl { white-space:nowrap; }
   .main { display:flex; gap:20px; flex-wrap:wrap; padding:4px 20px 20px; align-items:flex-start; }
   .card { background:var(--panel); border-radius:12px; padding:16px; }
-  canvas { display:block; touch-action:none; }
-  #triCanvas { cursor:crosshair; }
+  canvas { display:block; max-width:100%; height:auto; }
+  #triCanvas { cursor:crosshair; touch-action:none; }   /* only the triangle captures drags */
   .preview-wrap { text-align:center; }
   .preview-wrap .cap { color:var(--dim); font-size:12px; margin-top:8px; }
-  .physics { min-width:230px; }
-  .physics h2 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin:0 0 10px; }
-  .row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #31363f; }
+  .physics { min-width:230px; display:grid; grid-template-columns:1fr; column-gap:24px; }
+  .physics h2 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin:14px 0 8px; }
+  .pcol h2:first-child { margin-top:0; }
+  .row { display:flex; justify-content:space-between; gap:10px; padding:3px 0; border-bottom:1px solid #31363f; }
   .row:last-child { border-bottom:none; }
   .row .k { color:var(--dim); }
   .row .v { font-variant-numeric:tabular-nums; font-weight:600; }
-  .big { display:flex; gap:14px; justify-content:center; margin:2px 0 14px; }
-  .big div { text-align:center; }
+  .big { display:flex; gap:16px; justify-content:center; margin:2px 0 12px; }
+  .big > div { text-align:center; }
   .big .lab { font-size:11px; color:var(--dim); }
   .big .num { font-size:20px; font-weight:700; }
   .sensor { display:flex; gap:8px; align-items:center; margin-bottom:14px; }
@@ -90,6 +93,24 @@
   footer { color:var(--dim); font-size:13px; padding:0 20px 28px; }
   footer a { color:var(--aper); text-decoration:none; }
   footer a:hover { text-decoration:underline; }
+  @media (max-width: 720px) {
+    header { padding:10px 14px 2px; }
+    h1 { font-size:18px; }
+    p.sub { font-size:12px; }
+    .scenes { padding:8px 14px; gap:6px; }
+    .scenes button { flex-direction:column; gap:2px; padding:6px 8px; font-size:12px; }
+    .scenes .emoji { font-size:17px; }
+    .main { flex-direction:column; gap:10px; padding:2px 14px 12px; }
+    .card { width:100%; padding:10px; }
+    .physics { min-width:0; grid-template-columns:1fr 2fr; }
+    .pcol { display:flex; flex-direction:column; }
+    .big { flex:1; flex-direction:column; justify-content:space-between; align-items:center; gap:6px; margin:6px 0 0; }
+    .big > div { text-align:center; }
+    .preview-wrap .cap { margin-top:4px; }
+    .insight { padding:0 14px 12px; }
+    footer { padding:0 14px 16px; }
+    #triCanvas, #preview { margin:0 auto; }   /* centre the scaled canvases */
+  }
 </style>
 </head>
 <body>
@@ -103,7 +124,7 @@
 <div class="scenes" id="scenes"></div>
 
 <div class="main">
-  <div class="card"><canvas id="triCanvas" width="468" height="432"></canvas></div>
+  <div class="card"><canvas id="triCanvas" width="384" height="352"></canvas></div>
 
   <div class="card preview-wrap">
     <canvas id="preview" width="300" height="300"></canvas>
@@ -111,30 +132,34 @@
   </div>
 
   <div class="card physics">
-    <h2>Current settings</h2>
-    <div class="big">
-      <div><div class="lab">Aperture</div><div class="num" id="vAper" style="color:var(--aper)">f/8</div></div>
-      <div><div class="lab">Shutter</div><div class="num" id="vShut" style="color:var(--shut)">1/500</div></div>
-      <div><div class="lab">ISO</div><div class="num" id="vIso" style="color:var(--iso)">100</div></div>
+    <div class="pcol">
+      <h2>Settings</h2>
+      <div class="big">
+        <div><div class="lab">Aperture</div><div class="num" id="vAper" style="color:var(--aper)">f/8</div></div>
+        <div><div class="lab">Shutter</div><div class="num" id="vShut" style="color:var(--shut)">1/500</div></div>
+        <div><div class="lab">ISO</div><div class="num" id="vIso" style="color:var(--iso)">100</div></div>
+      </div>
     </div>
-    <h2>Sensor</h2>
-    <div class="sensor">
-      <select id="sensor">
-        <option value="864">Full-frame</option>
-        <option value="366.6">APS-C</option>
-        <option value="332.3">APS-C Canon</option>
-        <option value="224.9">Micro 4/3</option>
-        <option value="116">1″ type</option>
-        <option value="73">Phone 1/1.3″</option>
-        <option value="19">Phone 1/2.55″</option>
-      </select>
-      <input id="mp" type="number" min="1" step="1" value="24"><span>MP</span>
+    <div class="pcol">
+      <h2>Sensor</h2>
+      <div class="sensor">
+        <select id="sensor">
+          <option value="864">Full-frame</option>
+          <option value="366.6">APS-C</option>
+          <option value="332.3">APS-C Canon</option>
+          <option value="224.9">Micro 4/3</option>
+          <option value="116">1″ type</option>
+          <option value="73">Phone 1/1.3″</option>
+          <option value="19">Phone 1/2.55″</option>
+        </select>
+        <input id="mp" type="number" min="1" step="1" value="24"><span>MP</span>
+      </div>
+      <h2>Physics</h2>
+      <div class="row"><span class="k">Scene illuminance</span><span class="v" id="pLux">&ndash;</span></div>
+      <div class="row"><span class="k">Scene EV (ISO 100)</span><span class="v" id="pEv">&ndash;</span></div>
+      <div class="row"><span class="k">Photometric H</span><span class="v" id="pH">&ndash;</span></div>
+      <div class="row"><span class="k">Photons / pixel</span><span class="v" id="pPh">&ndash;</span></div>
     </div>
-    <h2>Physics</h2>
-    <div class="row"><span class="k">Scene illuminance</span><span class="v" id="pLux">&ndash;</span></div>
-    <div class="row"><span class="k">Scene EV (ISO 100)</span><span class="v" id="pEv">&ndash;</span></div>
-    <div class="row"><span class="k">Photometric H</span><span class="v" id="pH">&ndash;</span></div>
-    <div class="row"><span class="k">Photons / pixel</span><span class="v" id="pPh">&ndash;</span></div>
   </div>
 </div>
 
@@ -147,7 +172,7 @@
 </p>
 
 <footer>
-  Created by <a href="https://arnebaeyens.com/" target="_blank" rel="noopener">Arne Baeyens</a> · MIT license · <a href="https://github.com/abaeyens/exposure-triangle-app" target="_blank" rel="noopener">source code ↗</a>
+  Developed by <a href="https://arnebaeyens.com/" target="_blank" rel="noopener">Arne Baeyens</a> · <a href="https://github.com/abaeyens/exposure-triangle-app" target="_blank" rel="noopener">source code (MIT licensed) ↗</a>
 </footer>
 
 <script>
@@ -189,7 +214,7 @@ function buildCombos(sc){
 }
 
 // ---- geometry -------------------------------------------------------------
-const PA={x:234,y:56}, PS={x:88,y:352}, PI={x:380,y:352};   // A top, S left, I right
+const PA={x:190,y:28}, PS={x:44,y:278}, PI={x:336,y:278};   // A top, S left, I right
 const C ={x:(PA.x+PS.x+PI.x)/3, y:(PA.y+PS.y+PI.y)/3};
 const lerp=(p,q,t)=>({x:p.x+(q.x-p.x)*t, y:p.y+(q.y-p.y)*t});
 const baryPix=b=>({x:b.la*PA.x+b.ls*PS.x+b.li*PI.x,
@@ -261,12 +286,12 @@ function drawTriangle(){
   for(let ai=Math.min(ao,ac);ai<=Math.max(ao,ac);ai++){
     const la=(ac-ai)/K; tick(lerp(PS,PA,la),'f/'+APER[ai],AC,nAp);
   }
-  edgeName(PA,PS,'APERTURE','blur',AC,-22);
+  edgeName(PA,PS,'APERTURE','bokeh',AC,-22);
   // shutter axis on edge S-I
   for(let si=Math.min(sf,ss);si<=Math.max(sf,ss);si++){
     const ls=(sf-si)/K; tick(lerp(PI,PS,ls),SHUT[si].l,SC,nSh);
   }
-  edgeName(PS,PI,'SHUTTER','motion',SC);
+  edgeName(PS,PI,'SHUTTER','motion blur',SC);
   // iso axis on edge I-A
   for(let gi=il;gi<=ih;gi++){
     const li=(gi-il)/K; tick(lerp(PA,PI,li),ISO[gi],IC,nIs);
@@ -302,10 +327,13 @@ function drawPreview(apN, t, neff){
 
   // background dots, out of focus: additive light spread over a bokeh disc
   // (energy-conserving — a wider disc is dimmer), all in linear light.
+  // The grid fills the canvas at whatever aspect ratio it currently has.
   const baseR=3, R=baseR+Math.max(0,30*(1/apN-1/22)), R2=R*R;
   const add=DOT*(baseR*baseR)/R2;
-  for(let gx=0;gx<6;gx++)for(let gy=0;gy<6;gy++){
-    const cx=30+gx*48, cy=30+gy*48;
+  const nx=Math.max(2,Math.round(W/52)), ny=Math.max(2,Math.round(H/52));
+  const sx=W/nx, sy=H/ny;
+  for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){
+    const cx=sx*(i+0.5), cy=sy*(j+0.5);
     const x0=Math.max(0,(cx-R)|0), x1=Math.min(W-1,Math.ceil(cx+R));
     const y0=Math.max(0,(cy-R)|0), y1=Math.min(H-1,Math.ceil(cy+R));
     for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
@@ -314,8 +342,8 @@ function drawPreview(apN, t, neff){
   }
 
   // moving subject square: linear alpha = fraction of the exposure it covers the pixel
-  const side=64, cx=W/2, cy=H/2, half=side/2;
-  const streak=Math.min(150,900*t), sh2=streak/2;
+  const side=Math.round(Math.min(W,H)*0.42), cx=W/2, cy=H/2, half=side/2;
+  const streak=Math.min(W*0.45,900*t), sh2=streak/2;
   const y0=Math.max(0,(cy-half)|0), y1=Math.min(H-1,Math.ceil(cy+half));
   for(let y=y0;y<=y1;y++) for(let x=0;x<W;x++){
     let f;
@@ -362,7 +390,10 @@ function update(){
 // ---- scene buttons + pointer ---------------------------------------------
 const sd=document.getElementById('scenes');
 SCENES.forEach(sc=>{
-  const b=document.createElement('button'); b.textContent=sc.name;
+  const b=document.createElement('button');
+  const sp=sc.name.indexOf(' ');
+  b.innerHTML='<span class="emoji">'+sc.name.slice(0,sp)+'</span>'+
+              '<span class="lbl">'+sc.name.slice(sp+1)+'</span>';
   b.onclick=()=>{ [...sd.children].forEach(c=>c.classList.remove('active'));
     b.classList.add('active'); setScene(sc); };
   sd.appendChild(b);
@@ -386,7 +417,17 @@ mpInput.oninput=()=>{                       // MP must be a strictly positive nu
   if(ok) update();
 };
 
+// preview is a short 3:1 strip on mobile (saves vertical space), square on desktop
+function layout(){
+  const mobile = window.innerWidth <= 720;
+  const w = mobile ? 372 : 300, h = mobile ? 124 : 300;
+  if(prev.width!==w || prev.height!==h){ prev.width=w; prev.height=h; }
+  if(cur) update();
+}
+window.addEventListener('resize', layout);
+
 sd.children[2].classList.add('active');   // default Overcast
+layout();
 setScene(SCENES[2]);
 </script>
 </body>
