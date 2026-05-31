@@ -15,7 +15,7 @@ changes.
 - Each scene fixes the illuminance (its EV at ISO 100). The triangle is a
   ternary plot — each **edge is an axis** for one setting, with real f-stop /
   shutter / ISO ticks.
-- Or switch to **Manual** mode to type in an arbitrary illuminance (1–200000 lx)
+- Or switch to **Manual** mode to type in an arbitrary illuminance (0.5–200000 lx)
   and explore the triangle for that EV.
 - Every point in the triangle is a correctly-exposed combination: you freely
   choose any two settings and the third follows, because correct exposure

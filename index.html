@@ -389,7 +389,7 @@ function applyManual(lux){
 }
 function enterManual(){
   applyManual(manualLux);
-  pLux.innerHTML='<input id="luxIn" type="number" min="1" max="200000" step="any" value="'+Math.round(manualLux)+'"> lx';
+  pLux.innerHTML='<input id="luxIn" type="number" min="0.5" max="200000" step="any" value="'+Math.round(manualLux)+'"> lx';
   document.getElementById('luxIn').oninput=function(){
     const lux=parseFloat(this.value);
     const ok = luxValid(lux);                 // reject non-positive and > 200k lx

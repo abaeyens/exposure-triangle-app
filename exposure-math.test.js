@@ -73,7 +73,8 @@ test('off-range greying fires below the representable floor, not within it', () 
     const e = M.evOfCombo(...['ai','si','gi'].map(k => centroidCombo(combos)[k]));
     return Math.abs(M.evFromLux(lux) - e) > 0.8;
   };
-  assert.equal(off(1), true,  '1 lx is below the triangle floor → should grey out');
+  assert.equal(off(0.3), true,  '0.3 lx is below the ~0.6 lx (EV -2) floor → should grey out');
+  assert.equal(off(1), false, '1 lx is representable now that the floor extends to EV -2');
   assert.equal(off(3.4), false, '3.4 lx (twilight) is representable');
   assert.equal(off(10000), false, '10000 lx is representable');
 });

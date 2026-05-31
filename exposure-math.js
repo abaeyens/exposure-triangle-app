@@ -52,9 +52,9 @@ function buildCombos(sc){
 
 // build correctly-exposed axis ranges for an arbitrary EV (manual mode).
 // Aperture opens wider (toward f/1.4) and the ISO floor rises as it darkens;
-// the shutter takes up the rest.
+// the shutter takes up the rest. Representable EV range is [-2, 17].
 function axesForEV(ev){
-  ev = Math.max(0, Math.min(17, ev));
+  ev = Math.max(-2, Math.min(17, ev));
   let lowI = Math.max(0, Math.min(3, Math.round((12-ev)/2)));
   let closedA = Math.max(5, Math.min(7, 5 + Math.floor((ev-2)/4)));
   let fastS = Math.round(ev + 9 - closedA + lowI);
